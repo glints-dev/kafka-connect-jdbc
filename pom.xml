@@ -66,6 +66,7 @@
         <project.package.home>target/${project.artifactId}-${project.version}-package</project.package.home>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <testcontainers.version>1.16.2</testcontainers.version>
+        <debezium.version>1.8.1</debezium.version>
     </properties>
 
     <repositories>
@@ -86,6 +87,12 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-runtime</artifactId>
             <version>${kafka.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-core</artifactId>
+            <version>${debezium.version}.Final</version>
             <scope>provided</scope>
         </dependency>
          <!-- JDBC drivers, only included in runtime so they get packaged -->

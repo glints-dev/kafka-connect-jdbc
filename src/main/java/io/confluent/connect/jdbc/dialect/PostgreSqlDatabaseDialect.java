@@ -25,6 +25,7 @@ import io.confluent.connect.jdbc.util.ExpressionBuilder.Transform;
 import io.confluent.connect.jdbc.util.IdentifierRules;
 import io.confluent.connect.jdbc.util.TableDefinition;
 import io.confluent.connect.jdbc.util.TableId;
+import io.debezium.data.Uuid;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.utils.Utils;
 import org.apache.kafka.connect.data.Date;
@@ -299,6 +300,8 @@ public class PostgreSqlDatabaseDialect extends GenericDatabaseDialect {
           return "TIME";
         case Timestamp.LOGICAL_NAME:
           return "TIMESTAMP";
+        case Uuid.LOGICAL_NAME:
+          return "UUID";
         default:
           // fall through to normal types
       }

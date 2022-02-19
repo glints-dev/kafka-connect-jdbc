@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import io.confluent.common.utils.IntegrationTest;
 import io.confluent.connect.jdbc.integration.BaseConnectorIT;
 import io.confluent.connect.jdbc.sink.JdbcSinkConfig;
-
+import io.debezium.data.Uuid;
 import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
 import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -47,6 +47,7 @@ import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.confluent.connect.jdbc.sink.JdbcSinkConfig.AUTO_CREATE;
 import static io.confluent.connect.jdbc.sink.JdbcSinkConfig.MAX_RETRIES;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.ERRORS_TOLERANCE_CONFIG;
 import static org.apache.kafka.connect.runtime.SinkConnectorConfig.DLQ_TOPIC_NAME_CONFIG;
@@ -282,6 +283,33 @@ public class PostgresDatatypeIT extends BaseConnectorIT {
           assertEquals(struct.getString("lastname"), rs.getString("lastname"));
           assertJDBCArray(rs, "friends", struct);
           assertJDBCArray(rs, "friendnames", struct);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testCreateTableWithUUIDColumn() throws SQLException, InterruptedException {
+    props.put(AUTO_CREATE, "true");
+
+    connect.configureConnector("jdbc-sink-connector", props);
+    waitForConnectorToStart("jdbc-sink-connector", 1);
+
+    final Schema schema = SchemaBuilder.struct().name("com.example.Person")
+      .field("id", SchemaBuilder.string().name(Uuid.LOGICAL_NAME))
+      .build();
+    final Struct struct = new Struct(schema)
+        .put("id", UUID.randomUUID().toString());
+
+    produceRecord(schema, struct);
+    waitForCommittedRecords("jdbc-sink-connector", Collections.singleton(tableName), 1, 1,
+        TimeUnit.MINUTES.toMillis(3));
+
+    try (Connection c = pg.getEmbeddedPostgres().getPostgresDatabase().getConnection()) {
+      try (Statement s = c.createStatement()) {
+        try (ResultSet rs = s.executeQuery("SELECT * FROM " + tableName)) {
+          assertTrue(rs.next());
+          assertEquals(struct.getString("id"), rs.getString("id"));
         }
       }
     }
