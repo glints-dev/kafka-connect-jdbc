@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  builder:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    user: kafka
+    working_dir: /app
+    volumes:
+      - .:/app
