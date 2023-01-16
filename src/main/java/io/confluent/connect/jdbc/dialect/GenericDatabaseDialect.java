@@ -1748,6 +1748,15 @@ public class GenericDatabaseDialect implements DatabaseDialect {
               DateTimeUtils.getTimeZoneCalendar(timeZone)
           );
           return true;
+        case "io.debezium.time.Date":
+          long valuenew = Long.parseLong(value.toString()) * 86400000L;
+          java.util.Date dateValue = new java.util.Date(valuenew);
+          statement.setDate(
+              index,
+              new java.sql.Date(((java.util.Date) dateValue).getTime()),
+              DateTimeUtils.getTimeZoneCalendar(timeZone)
+          );
+          return true;
         default:
           return false;
       }
